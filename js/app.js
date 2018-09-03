@@ -1,7 +1,13 @@
 /*
  * Create a list that holds all of your cards
  */
+let cards = Array.prototype.slice.call(document.querySelectorAll(".deck li.card"));
+const scorePanel = document.querySelector(".score-panel");
+const stars = document.querySelector(".stars");
+const deck = document.querySelector(".deck");
+const moves = document.querySelector(".moves");
 
+let moveCnt = 0;
 
 /*
  * Display the cards on the page
@@ -36,3 +42,71 @@ function shuffle(array) {
  *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
+
+function restart(init = true) {
+    if(!init) {
+        for(let card of cards) {
+            if(card.classList.contains("match")) {
+                card.classList.remove("match");
+            }
+            if(card.classList.contains("open")) {
+                card.classList.remove("open");
+            }
+            if(card.classList.contains("show")) {
+                card.classList.remove("show");
+            }
+        }
+    }
+    moveCnt = 0;
+    moves.textContent = moveCnt;
+    cards = shuffle(cards);
+    deck.innerHTML = cards.map(card => card.outerHTML).join("");
+}
+
+const restartBtn = document.querySelector(".restart");
+restartBtn.addEventListener("click", restart.bind(this, false));
+
+let selectedCards = []; 
+
+deck.addEventListener("click", (e) => {
+    const targetClasses = e.target.classList;
+
+    if(targetClasses.contains("card")) {
+        if(!targetClasses.contains("open") && selectedCards.length < 2) {
+            targetClasses.add("show");
+            targetClasses.add("open");
+            selectedCards.push(e.target);
+
+            if(selectedCards.length === 2){
+                plusMove();
+
+                if(isMatched(selectedCards)) {
+                    selectedCards.forEach(card => {
+                        card.classList.add("match");
+                    });
+                }
+
+                setTimeout(() => {
+                    selectedCards.forEach(card => {
+                        card.classList.remove("show");
+                        card.classList.remove("open");
+                    });
+                    selectedCards = [];
+                }, 500);
+            }
+        }
+    }
+});
+
+function plusMove() {
+    moves.textContent = ++moveCnt;
+}
+
+function isMatched(cards) {
+    return (cards[0].dataset.shape === cards[1].dataset.shape)? true : false; 
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    restart();
+});
+
