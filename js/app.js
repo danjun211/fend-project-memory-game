@@ -6,6 +6,7 @@ const scorePanel = document.querySelector(".score-panel");
 const stars = document.querySelector(".stars");
 const deck = document.querySelector(".deck");
 const moves = document.querySelector(".moves");
+const popupPanel = document.querySelector(".popup-panel");
 
 let moveCnt = 0;
 
@@ -68,35 +69,51 @@ restartBtn.addEventListener("click", restart.bind(this, false));
 
 let selectedCards = []; 
 
+popupPanel.addEventListener("click", (e) => { 
+    e.currentTarget.classList.add("hide");
+});
+
 deck.addEventListener("click", (e) => {
     const targetClasses = e.target.classList;
 
     if(targetClasses.contains("card")) {
-        if(!targetClasses.contains("open") && selectedCards.length < 2) {
-            targetClasses.add("show");
-            targetClasses.add("open");
-            selectedCards.push(e.target);
+        if(!isMatchedAll()) {
+            if(!targetClasses.contains("open") && selectedCards.length < 2) {
+                targetClasses.add("show");
+                targetClasses.add("open");
+                selectedCards.push(e.target);
+    
+                if(selectedCards.length === 2){
+                    plusMove();
+    
+                    if(isMatched(selectedCards)) {
+                        selectedCards.forEach(card => {
+                            card.classList.add("match");
+                        });
+                    }
+    
+                    setTimeout(() => {
+                        selectedCards.forEach(card => {
+                            card.classList.remove("show");
+                            card.classList.remove("open");
+                        });
+                        selectedCards = [];
+                    }, 500);
 
-            if(selectedCards.length === 2){
-                plusMove();
-
-                if(isMatched(selectedCards)) {
-                    selectedCards.forEach(card => {
-                        card.classList.add("match");
-                    });
+                    if(isMatchedAll()) {
+                        popupPanel.classList.remove(".hide");
+                    }
                 }
-
-                setTimeout(() => {
-                    selectedCards.forEach(card => {
-                        card.classList.remove("show");
-                        card.classList.remove("open");
-                    });
-                    selectedCards = [];
-                }, 500);
             }
+        } else {
+
         }
     }
 });
+
+function isMatchedAll() {
+    return document.querySelectorAll(".match").length === document.querySelectorAll(".card").length
+}
 
 function plusMove() {
     moves.textContent = ++moveCnt;
