@@ -212,15 +212,4 @@ function showStars() {
 document.addEventListener("DOMContentLoaded", () => {
     restartGame(true);
     Timer.init();
-
-    // for test
-    makeMatchAll();
-    if(isMatchedAll()) {
-        stopGame();
-    }
 });
-
-// Test Functions 
-function makeMatchAll() {
-    document.querySelectorAll(".card").forEach(card => card.classList.add("match"));
-}
