@@ -3,12 +3,16 @@
  */
 let cards = Array.prototype.slice.call(document.querySelectorAll(".deck li.card"));
 const scorePanel = document.querySelector(".score-panel");
-const stars = document.querySelector(".stars");
+const stars = document.querySelectorAll(".stars");
 const deck = document.querySelector(".deck");
 const moves = document.querySelector(".moves");
 const popupPanel = document.querySelector(".popup-panel");
+const winPopup = document.getElementById("win-popup");
 
 let moveCnt = 0;
+
+let grade = 30;
+let score = 3;
 
 /*
  * Display the cards on the page
@@ -44,7 +48,7 @@ function shuffle(array) {
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
 
-function restart(init = true) {
+function restartGame(init = false) {
     if(!init) {
         for(let card of cards) {
             if(card.classList.contains("match")) {
@@ -57,53 +61,100 @@ function restart(init = true) {
                 card.classList.remove("show");
             }
         }
+        showStars();
+        Timer.stop();
+        Timer.reset();
     }
+    Timer.start();
+
     moveCnt = 0;
     moves.textContent = moveCnt;
     cards = shuffle(cards);
     deck.innerHTML = cards.map(card => card.outerHTML).join("");
 }
 
+const Timer = (function(){
+    let seconds = 0;
+    let interval;
+    let timeSeconds;
+
+    function init() {
+        timeSeconds = document.querySelector(".time-seconds");
+    }
+
+    function start() {
+        interval = setInterval(() => {
+            timeSeconds.textContent = ++seconds;
+        }, 1000);
+    }
+
+    function stop() {
+        clearInterval(interval);
+    }
+
+    function reset() {
+        seconds = 0;
+        timeSeconds.textContent = seconds;
+    }
+
+    return {
+        start, stop, reset, seconds, init
+    }
+})();
+
 const restartBtn = document.querySelector(".restart");
-restartBtn.addEventListener("click", restart.bind(this, false));
+restartBtn.addEventListener("click", () => restartGame());
 
 let selectedCards = []; 
 
-popupPanel.addEventListener("click", (e) => { 
-    e.currentTarget.classList.add("hide");
+winPopup.addEventListener("click", (e) => { 
+    if(parseInt(e.target.dataset.isYes)) {
+        restartGame();
+    }
+    e.target.closest(".popup-panel").classList.add("hide");
 });
+
+let isClicked = false;
 
 deck.addEventListener("click", (e) => {
     const targetClasses = e.target.classList;
 
     if(targetClasses.contains("card")) {
-        if(!isMatchedAll()) {
+        if(!isMatchedAll() && !isClicked) {
+            isClicked = true;
             if(!targetClasses.contains("open") && selectedCards.length < 2) {
                 targetClasses.add("show");
-                targetClasses.add("open");
-                selectedCards.push(e.target);
+                targetClasses.add("flip");
+                setTimeout(() => {
+                    targetClasses.add("open");
+                
+                    selectedCards.push(e.target);
+        
+                    if(selectedCards.length === 2){
+                        setTimeout(() => {
+                            plusMoveAndCalScore();
     
-                if(selectedCards.length === 2){
-                    plusMove();
-    
-                    if(isMatched(selectedCards)) {
-                        selectedCards.forEach(card => {
-                            card.classList.add("match");
-                        });
+                            if(isMatched(selectedCards)) {
+                                selectedCards.forEach(card => {
+                                    card.classList.add("match");
+                                });
+                            }
+            
+                            selectedCards.forEach(card => {
+                                card.classList.remove("show");
+                                card.classList.remove("open");
+                                card.classList.remove("flip");
+                            });
+                            selectedCards = [];
+        
+                            if(isMatchedAll()) {
+                                stopGame();
+                            }
+                            isClicked = false;
+                        }, 500);
                     }
-    
-                    setTimeout(() => {
-                        selectedCards.forEach(card => {
-                            card.classList.remove("show");
-                            card.classList.remove("open");
-                        });
-                        selectedCards = [];
-                    }, 500);
-
-                    if(isMatchedAll()) {
-                        popupPanel.classList.remove(".hide");
-                    }
-                }
+                    isClicked = false;
+                }, 500);
             }
         } else {
 
@@ -111,12 +162,42 @@ deck.addEventListener("click", (e) => {
     }
 });
 
+function stopGame() {
+    Timer.stop();
+    popupPanel.classList.remove("hide");
+}
+
 function isMatchedAll() {
     return document.querySelectorAll(".match").length === document.querySelectorAll(".card").length
 }
 
-function plusMove() {
+function plusMoveAndCalScore() {
     moves.textContent = ++moveCnt;
+    grade = 30 - moveCnt;
+    if(grade >= 0) {
+        if(grade === 15) {
+            score--;
+            hideStar();
+        } else if(grade === 0) {
+            score = 1; // min score
+            hideStar();
+        }
+    }
+}
+
+function hideStar() {
+    for(let star of stars) {
+        star.querySelector("li:not(.hide)").classList.add("hide");
+    }
+}
+
+function showStars() {
+    for(let star of stars) {
+        let hiddenStar = star.querySelector("li.hide");
+        if(hiddenStar !== null) {
+            hiddenStar.classList.remove("hide");
+        }
+    }
 }
 
 function isMatched(cards) {
@@ -124,6 +205,17 @@ function isMatched(cards) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    restart();
+    restartGame(true);
+    Timer.init();
+
+    // for test
+    makeMatchAll();
+    if(isMatchedAll()) {
+        stopGame();
+    }
 });
 
+// Test Functions 
+function makeMatchAll() {
+    document.querySelectorAll(".card").forEach(card => card.classList.add("match"));
+}

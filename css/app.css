@@ -89,16 +89,17 @@ h1 {
     text-align: left;
     width: 345px;
     margin-bottom: 10px;
+    position: relative;
 }
 
-.score-panel .stars {
+.score-panel .stars, #win-popup .stars {
     margin: 0;
     padding: 0;
     display: inline-block;
     margin: 0 5px 0 0;
 }
 
-.score-panel .stars li {
+.score-panel .stars li, #win-popup .stars li {
     list-style: none;
     display: inline-block;
 }
@@ -106,6 +107,12 @@ h1 {
 .score-panel .restart {
     float: right;
     cursor: pointer;
+}
+
+.score-panel .timer {
+    position: absolute;
+    top: 0;
+    left: 50%;
 }
 
 .hide {
@@ -137,4 +144,87 @@ h1 {
     font-size: 2rem;
     font-weight: bold;
     color: #000222;
+}
+
+.btn-blue {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .3rem .8rem;
+    font-size: 1rem;
+    line-height: 1.3;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.btn-blue:hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
+    cursor: pointer;
+}
+
+#win-popup .btn {
+    width: 5rem;
+}
+
+.sm-txt {
+    font-size: 18px;
+}
+
+.flip {
+    -moz-animation-duration: 1s;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -moz-animation-name: flip;
+    -webkit-animation-name: flip;
+    animation-name: flip;
+    -moz-animation-iteration-count: 1;
+    -webkit-animation-iteration-count: 1;
+    animation-iteration-count: 1;
+    -moz-animation-direction: alternate;
+    -webkit-animation-direction: alternate;
+    animation-direction: alternate;
+}
+@-moz-keyframes flip {
+    from {
+        transform: rotateY(180deg);
+    }
+
+    to {
+        transform: rotateY(0);
+    }
+}
+
+@-webkit-keyframes flip {
+    from {
+        transform: rotateY(180deg);
+    }
+    
+    to {
+        transform: rotateY(0);
+    }
+}
+
+@keyframes flip {
+    from {
+        transform: rotateY(180deg);
+    }
+    
+    to {
+        transform: rotateY(0);
+    }
 }
