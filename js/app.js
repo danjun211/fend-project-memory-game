@@ -1,7 +1,8 @@
 /*
- * Create a list that holds all of your cards
- */
+* Create a list that holds all of your cards
+*/
 let cards = Array.prototype.slice.call(document.querySelectorAll(".deck li.card"));
+
 const scorePanel = document.querySelector(".score-panel");
 const stars = document.querySelectorAll(".stars");
 const deck = document.querySelector(".deck");
@@ -11,9 +12,10 @@ const winPopup = document.getElementById("win-popup");
 
 let moveCnt = 0;
 
-let grade = 30;
+let grade = 30; // 30 >= grade > 15: score 3, 15 > grade > 0: score 2, grade = 0: score 1
 let score = 3;
 
+let selectedCards = []; // store selected cards into this
 /*
  * Display the cards on the page
  *   - shuffle the list of cards using the provided "shuffle" method below
@@ -50,6 +52,7 @@ function shuffle(array) {
 
 function restartGame(init = false) {
     if(!init) {
+        // remove classes of all cards
         for(let card of cards) {
             if(card.classList.contains("match")) {
                 card.classList.remove("match");
@@ -67,10 +70,15 @@ function restartGame(init = false) {
     }
     Timer.start();
 
-    moveCnt = 0;
-    moves.textContent = moveCnt;
-    cards = shuffle(cards);
-    deck.innerHTML = cards.map(card => card.outerHTML).join("");
+    moveCnt = 0;   
+    moves.textContent = moveCnt;    // init text of moves to 0
+    cards = shuffle(cards); // shuffle cards
+    deck.innerHTML = cards.map(card => card.outerHTML).join("");    // replace shuffled cards into deck
+}
+
+function stopGame() {
+    Timer.stop();
+    popupPanel.classList.remove("hide");
 }
 
 const Timer = (function(){
@@ -105,8 +113,6 @@ const Timer = (function(){
 const restartBtn = document.querySelector(".restart");
 restartBtn.addEventListener("click", () => restartGame());
 
-let selectedCards = []; 
-
 winPopup.addEventListener("click", (e) => { 
     if(parseInt(e.target.dataset.isYes)) {
         restartGame();
@@ -114,38 +120,39 @@ winPopup.addEventListener("click", (e) => {
     e.target.closest(".popup-panel").classList.add("hide");
 });
 
-let isClicked = false;
 
+let isClicked = false; // prevents interrupting play
+// play logic
 deck.addEventListener("click", (e) => {
     const targetClasses = e.target.classList;
 
-    if(targetClasses.contains("card")) {
-        if(!isMatchedAll() && !isClicked) {
+    if(targetClasses.contains("card")) { // if you click card,
+        if(!isMatchedAll() && !isClicked) { // if any card is not animating and game isn't finished
             isClicked = true;
-            if(!targetClasses.contains("open") && selectedCards.length < 2) {
-                targetClasses.add("show");
-                targetClasses.add("flip");
+            if(!targetClasses.contains("open") && selectedCards.length < 2) {  
+                targetClasses.add("show");  // show this card
+                targetClasses.add("flip");  // flip this card
                 setTimeout(() => {
-                    targetClasses.add("open");
+                    targetClasses.add("open");  // add open clsass after this card turned 180 deg
                 
-                    selectedCards.push(e.target);
+                    selectedCards.push(e.target);   // push this card to selected cards array
         
-                    if(selectedCards.length === 2){
+                    if(selectedCards.length === 2){ // if you selected two cards,
                         setTimeout(() => {
                             plusMoveAndCalScore();
     
-                            if(isMatched(selectedCards)) {
+                            if(isMatched(selectedCards)) { // check whether selected cards is matched. if ture, add match class 
                                 selectedCards.forEach(card => {
                                     card.classList.add("match");
                                 });
                             }
             
-                            selectedCards.forEach(card => {
+                            selectedCards.forEach(card => { // remove other classes
                                 card.classList.remove("show");
                                 card.classList.remove("open");
                                 card.classList.remove("flip");
                             });
-                            selectedCards = [];
+                            selectedCards = []; // init selected cards
         
                             if(isMatchedAll()) {
                                 stopGame();
@@ -162,15 +169,17 @@ deck.addEventListener("click", (e) => {
     }
 });
 
-function stopGame() {
-    Timer.stop();
-    popupPanel.classList.remove("hide");
-}
-
+// check whether all cards is matched
 function isMatchedAll() {
     return document.querySelectorAll(".match").length === document.querySelectorAll(".card").length
 }
 
+// check whether selected cards is matched
+function isMatched(cards) {
+    return (cards[0].dataset.shape === cards[1].dataset.shape)? true : false; 
+}
+
+// plus move and caculate socre
 function plusMoveAndCalScore() {
     moves.textContent = ++moveCnt;
     grade = 30 - moveCnt;
@@ -198,10 +207,6 @@ function showStars() {
             hiddenStar.classList.remove("hide");
         }
     }
-}
-
-function isMatched(cards) {
-    return (cards[0].dataset.shape === cards[1].dataset.shape)? true : false; 
 }
 
 document.addEventListener("DOMContentLoaded", () => {
